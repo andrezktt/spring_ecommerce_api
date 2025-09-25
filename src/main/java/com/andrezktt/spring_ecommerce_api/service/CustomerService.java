@@ -5,6 +5,7 @@ import com.andrezktt.spring_ecommerce_api.dto.CustomerRequestDTO;
 import com.andrezktt.spring_ecommerce_api.dto.CustomerResponseDTO;
 import com.andrezktt.spring_ecommerce_api.repository.CustomerRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,9 +15,11 @@ import java.util.List;
 public class CustomerService {
 
     private final CustomerRepository customerRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public CustomerService(CustomerRepository customerRepository) {
+    public CustomerService(CustomerRepository customerRepository, PasswordEncoder passwordEncoder) {
         this.customerRepository = customerRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
@@ -24,7 +27,9 @@ public class CustomerService {
         Customer customer = new Customer();
         customer.setName(requestDTO.name());
         customer.setEmail(requestDTO.email());
-        customer.setPassword(requestDTO.password());
+
+        customer.setPassword(passwordEncoder.encode(requestDTO.password()));
+
         customer.setAddress(requestDTO.address());
 
         Customer savedCustomer = customerRepository.save(customer);
