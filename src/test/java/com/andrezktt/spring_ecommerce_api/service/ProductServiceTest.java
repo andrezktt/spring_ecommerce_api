@@ -64,7 +64,7 @@ public class ProductServiceTest {
     }
 
     @Test
-    @DisplayName("Deve retornat uma lista de todos os produtos")
+    @DisplayName("Deve retornar uma lista de todos os produtos")
     void getAllProducts_Success() {
         when(productRepository.findAll()).thenReturn(Collections.singletonList(product));
 
