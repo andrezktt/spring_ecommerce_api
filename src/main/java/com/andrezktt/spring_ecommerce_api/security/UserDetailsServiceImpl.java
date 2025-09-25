@@ -27,7 +27,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         Customer customer = customerRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com o e-mail: " + email));
 
-        List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_CUSTOMER"));
+        GrantedAuthority authority = new SimpleGrantedAuthority(customer.getRole().name());
+        List<GrantedAuthority> authorities = Collections.singletonList(authority);
 
         return new User(customer.getEmail(), customer.getPassword(), authorities);
     }

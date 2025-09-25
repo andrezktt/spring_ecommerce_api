@@ -1,6 +1,7 @@
 package com.andrezktt.spring_ecommerce_api.service;
 
 import com.andrezktt.spring_ecommerce_api.domain.Customer;
+import com.andrezktt.spring_ecommerce_api.domain.Role;
 import com.andrezktt.spring_ecommerce_api.dto.CustomerRequestDTO;
 import com.andrezktt.spring_ecommerce_api.dto.CustomerResponseDTO;
 import com.andrezktt.spring_ecommerce_api.repository.CustomerRepository;
@@ -32,6 +33,8 @@ public class CustomerService {
 
         customer.setAddress(requestDTO.address());
 
+        customer.setRole(Role.ROLE_CUSTOMER);
+
         Customer savedCustomer = customerRepository.save(customer);
         return toResponseDTO(savedCustomer);
     }
@@ -58,7 +61,7 @@ public class CustomerService {
         customer.setName(requestDTO.name());
         customer.setEmail(requestDTO.email());
         if (requestDTO.password() != null && !requestDTO.password().isEmpty()) {
-            customer.setPassword(requestDTO.password());
+            customer.setPassword(passwordEncoder.encode(requestDTO.password()));
         }
         customer.setAddress(requestDTO.address());
 

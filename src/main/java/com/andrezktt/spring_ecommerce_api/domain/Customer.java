@@ -33,6 +33,10 @@ public class Customer {
 
     private String address;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
+
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<PurchaseOrder> orders = new ArrayList<>();
