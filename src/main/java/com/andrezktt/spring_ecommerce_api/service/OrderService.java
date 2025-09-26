@@ -2,6 +2,7 @@ package com.andrezktt.spring_ecommerce_api.service;
 
 import com.andrezktt.spring_ecommerce_api.domain.*;
 import com.andrezktt.spring_ecommerce_api.dto.*;
+import com.andrezktt.spring_ecommerce_api.mapper.OrderMapper;
 import com.andrezktt.spring_ecommerce_api.repository.CustomerRepository;
 import com.andrezktt.spring_ecommerce_api.repository.ProductRepository;
 import com.andrezktt.spring_ecommerce_api.repository.PurchaseOrderRepository;
@@ -20,11 +21,16 @@ public class OrderService {
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final CustomerRepository customerRepository;
     private final ProductRepository productRepository;
+    private final OrderMapper orderMapper;
 
-    public OrderService(PurchaseOrderRepository purchaseOrderRepository, CustomerRepository customerRepository, ProductRepository productRepository) {
+    public OrderService(PurchaseOrderRepository purchaseOrderRepository,
+                        CustomerRepository customerRepository,
+                        ProductRepository productRepository,
+                        OrderMapper orderMapper) {
         this.purchaseOrderRepository = purchaseOrderRepository;
         this.customerRepository = customerRepository;
         this.productRepository = productRepository;
+        this.orderMapper = orderMapper;
     }
 
     @Transactional
@@ -62,9 +68,9 @@ public class OrderService {
 
         purchaseOrder.setOrderItems(orderItems);
         purchaseOrder.setTotalAmount(totalAmount);
-
         PurchaseOrder savedOrder = purchaseOrderRepository.save(purchaseOrder);
-        return toResponseDTO(savedOrder);
+
+        return orderMapper.toResponseDTO(savedOrder);
     }
 
     @Transactional(readOnly = true)
@@ -73,7 +79,7 @@ public class OrderService {
             throw new EntityNotFoundException("Cliente não encontrado.");
         }
         List<PurchaseOrder> orders = purchaseOrderRepository.findByCustomerId(customerId);
-        return orders.stream().map(this::toResponseDTO).toList();
+        return orderMapper.toResponseDTOList(orders);
     }
 
     @Transactional
@@ -82,24 +88,6 @@ public class OrderService {
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado com o id: " + orderId));
         order.setStatus(statusDTO.newStatus());
         PurchaseOrder updatedOrder = purchaseOrderRepository.save(order);
-        return toResponseDTO(updatedOrder);
-    }
-
-    private OrderResponseDTO toResponseDTO(PurchaseOrder order) {
-        List<OrderItemResponseDTO> itemsDTO = order.getOrderItems().stream().map(item ->
-                new OrderItemResponseDTO(
-                        item.getProduct().getId(),
-                        item.getProduct().getName(),
-                        item.getQuantity(),
-                        item.getUnitPrice()
-                )).toList();
-        return new OrderResponseDTO(
-                order.getId(),
-                order.getCustomer().getId(),
-                order.getOrderDate(),
-                order.getStatus().name(),
-                order.getTotalAmount(),
-                itemsDTO
-        );
+        return orderMapper.toResponseDTO(updatedOrder);
     }
 }
