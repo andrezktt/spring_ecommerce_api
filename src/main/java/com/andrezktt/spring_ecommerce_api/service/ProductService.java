@@ -3,6 +3,7 @@ package com.andrezktt.spring_ecommerce_api.service;
 import com.andrezktt.spring_ecommerce_api.domain.Product;
 import com.andrezktt.spring_ecommerce_api.dto.ProductRequestDTO;
 import com.andrezktt.spring_ecommerce_api.dto.ProductResponseDTO;
+import com.andrezktt.spring_ecommerce_api.mapper.ProductMapper;
 import com.andrezktt.spring_ecommerce_api.repository.OrderItemRepository;
 import com.andrezktt.spring_ecommerce_api.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -11,48 +12,43 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Service
 public class ProductService {
 
     private final ProductRepository productRepository;
     private final OrderItemRepository orderItemRepository;
+    private final ProductMapper productMapper;
 
-    public ProductService(ProductRepository productRepository, OrderItemRepository orderItemRepository) {
+    public ProductService(ProductRepository productRepository, OrderItemRepository orderItemRepository, ProductMapper productMapper) {
         this.productRepository = productRepository;
         this.orderItemRepository = orderItemRepository;
+        this.productMapper = productMapper;
     }
 
     @Transactional
     public ProductResponseDTO createProduct(ProductRequestDTO requestDTO) {
-        Product product = new Product();
-        product.setName(requestDTO.name());
-        product.setDescription(requestDTO.description());
-        product.setPrice(requestDTO.price());
-        product.setStockQuantity(requestDTO.stockQuantity());
-
+        Product product = productMapper.toEntity(requestDTO);
         Product savedProduct = productRepository.save(product);
-        return toResponseDTO(savedProduct);
+        return productMapper.toResponseDTO(savedProduct);
     }
 
     @Transactional(readOnly = true)
     public Page<ProductResponseDTO> getAllProducts(Pageable pageable) {
-        return productRepository.findAll(pageable).map(this::toResponseDTO);
+        Page<Product> productPage = productRepository.findAll(pageable);
+        return productPage.map(productMapper::toResponseDTO);
     }
 
     @Transactional(readOnly = true)
     public ProductResponseDTO getProductById(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado com o id: " + id));
-        return toResponseDTO(product);
+        return productMapper.toResponseDTO(product);
     }
 
     @Transactional
     public Page<ProductResponseDTO> searchProducts(String name, Pageable pageable) {
         Page<Product> productPage = productRepository.findByNameContainingIgnoreCase(name, pageable);
-        return productPage.map(this::toResponseDTO);
+        return productPage.map(productMapper::toResponseDTO);
     }
 
     @Transactional
@@ -60,13 +56,10 @@ public class ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado com o id: " + id));
 
-        product.setName(requestDTO.name());
-        product.setDescription(requestDTO.description());
-        product.setPrice(requestDTO.price());
-        product.setStockQuantity(requestDTO.stockQuantity());
+        productMapper.updateProductFromDTO(requestDTO, product);
 
         Product updatedProduct = productRepository.save(product);
-        return toResponseDTO(updatedProduct);
+        return productMapper.toResponseDTO(updatedProduct);
     }
 
     @Transactional
@@ -78,15 +71,5 @@ public class ProductService {
             throw new IllegalStateException("Não é possível excluir um produto que já está associado a um pedido.");
         }
         productRepository.deleteById(id);
-    }
-
-    private ProductResponseDTO toResponseDTO(Product product) {
-        return new ProductResponseDTO(
-                product.getId(),
-                product.getName(),
-                product.getDescription(),
-                product.getPrice(),
-                product.getStockQuantity()
-        );
     }
 }
