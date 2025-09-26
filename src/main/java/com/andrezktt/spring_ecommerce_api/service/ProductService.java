@@ -5,6 +5,8 @@ import com.andrezktt.spring_ecommerce_api.dto.ProductRequestDTO;
 import com.andrezktt.spring_ecommerce_api.dto.ProductResponseDTO;
 import com.andrezktt.spring_ecommerce_api.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,10 +35,8 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProductResponseDTO> getAllProducts() {
-        return productRepository.findAll().stream()
-                .map(this::toResponseDTO)
-                .collect(Collectors.toList());
+    public Page<ProductResponseDTO> getAllProducts(Pageable pageable) {
+        return productRepository.findAll(pageable).map(this::toResponseDTO);
     }
 
     @Transactional(readOnly = true)

@@ -4,6 +4,9 @@ import com.andrezktt.spring_ecommerce_api.dto.ProductRequestDTO;
 import com.andrezktt.spring_ecommerce_api.dto.ProductResponseDTO;
 import com.andrezktt.spring_ecommerce_api.service.ProductService;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -30,8 +33,8 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ProductResponseDTO>> getAllProducts() {
-        List<ProductResponseDTO> products = productService.getAllProducts();
+    public ResponseEntity<Page<ProductResponseDTO>> getAllProducts(@ParameterObject Pageable pageable) {
+        Page<ProductResponseDTO> products = productService.getAllProducts(pageable);
         return ResponseEntity.ok(products);
     }
 
