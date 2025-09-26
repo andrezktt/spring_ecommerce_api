@@ -3,6 +3,7 @@ package com.andrezktt.spring_ecommerce_api.service;
 import com.andrezktt.spring_ecommerce_api.domain.Product;
 import com.andrezktt.spring_ecommerce_api.dto.ProductRequestDTO;
 import com.andrezktt.spring_ecommerce_api.dto.ProductResponseDTO;
+import com.andrezktt.spring_ecommerce_api.repository.OrderItemRepository;
 import com.andrezktt.spring_ecommerce_api.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
@@ -17,9 +18,11 @@ import java.util.stream.Collectors;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final OrderItemRepository orderItemRepository;
 
-    public ProductService(ProductRepository productRepository) {
+    public ProductService(ProductRepository productRepository, OrderItemRepository orderItemRepository) {
         this.productRepository = productRepository;
+        this.orderItemRepository = orderItemRepository;
     }
 
     @Transactional
@@ -70,6 +73,9 @@ public class ProductService {
     public void deleteProduct(Long id) {
         if (!productRepository.existsById(id)) {
             throw new EntityNotFoundException("Produto não encontrado com o id: " + id);
+        }
+        if (orderItemRepository.existsByProductId(id)) {
+            throw new IllegalStateException("Não é possível excluir um produto que já está associado a um pedido.");
         }
         productRepository.deleteById(id);
     }
