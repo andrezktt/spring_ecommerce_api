@@ -2,6 +2,7 @@ package com.andrezktt.spring_ecommerce_api.controller;
 
 import com.andrezktt.spring_ecommerce_api.dto.OrderRequestDTO;
 import com.andrezktt.spring_ecommerce_api.dto.OrderResponseDTO;
+import com.andrezktt.spring_ecommerce_api.dto.UpdateOrderStatusDTO;
 import com.andrezktt.spring_ecommerce_api.service.OrderService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -33,5 +34,13 @@ public class OrderController {
     public ResponseEntity<List<OrderResponseDTO>> getOrdersByCustomer(@RequestParam Long customerId) {
         List<OrderResponseDTO> orders = orderService.getOrdersByCustomerId(customerId);
         return ResponseEntity.ok(orders);
+    }
+
+    @PatchMapping("/{orderId}/status")
+    public ResponseEntity<OrderResponseDTO> updateOrderStatus(
+            @PathVariable Long orderId,
+            @Valid @RequestBody UpdateOrderStatusDTO statusDTO) {
+        OrderResponseDTO updatedOrder = orderService.updateOrderStatus(orderId, statusDTO);
+        return ResponseEntity.ok(updatedOrder);
     }
 }

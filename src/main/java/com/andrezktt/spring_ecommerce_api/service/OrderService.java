@@ -1,13 +1,7 @@
 package com.andrezktt.spring_ecommerce_api.service;
 
-import com.andrezktt.spring_ecommerce_api.domain.Customer;
-import com.andrezktt.spring_ecommerce_api.domain.OrderItem;
-import com.andrezktt.spring_ecommerce_api.domain.Product;
-import com.andrezktt.spring_ecommerce_api.domain.PurchaseOrder;
-import com.andrezktt.spring_ecommerce_api.dto.OrderItemRequestDTO;
-import com.andrezktt.spring_ecommerce_api.dto.OrderItemResponseDTO;
-import com.andrezktt.spring_ecommerce_api.dto.OrderRequestDTO;
-import com.andrezktt.spring_ecommerce_api.dto.OrderResponseDTO;
+import com.andrezktt.spring_ecommerce_api.domain.*;
+import com.andrezktt.spring_ecommerce_api.dto.*;
 import com.andrezktt.spring_ecommerce_api.repository.CustomerRepository;
 import com.andrezktt.spring_ecommerce_api.repository.ProductRepository;
 import com.andrezktt.spring_ecommerce_api.repository.PurchaseOrderRepository;
@@ -41,7 +35,7 @@ public class OrderService {
         PurchaseOrder purchaseOrder = new PurchaseOrder();
         purchaseOrder.setCustomer(customer);
         purchaseOrder.setOrderDate(LocalDateTime.now());
-        purchaseOrder.setStatus("PENDING");
+        purchaseOrder.setStatus(OrderStatus.PENDING);
 
         List<OrderItem> orderItems = new ArrayList<>();
         BigDecimal totalAmount = BigDecimal.ZERO;
@@ -82,6 +76,15 @@ public class OrderService {
         return orders.stream().map(this::toResponseDTO).toList();
     }
 
+    @Transactional
+    public OrderResponseDTO updateOrderStatus(Long orderId, UpdateOrderStatusDTO statusDTO) {
+        PurchaseOrder order = purchaseOrderRepository.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado com o id: " + orderId));
+        order.setStatus(statusDTO.newStatus());
+        PurchaseOrder updatedOrder = purchaseOrderRepository.save(order);
+        return toResponseDTO(updatedOrder);
+    }
+
     private OrderResponseDTO toResponseDTO(PurchaseOrder order) {
         List<OrderItemResponseDTO> itemsDTO = order.getOrderItems().stream().map(item ->
                 new OrderItemResponseDTO(
@@ -94,7 +97,7 @@ public class OrderService {
                 order.getId(),
                 order.getCustomer().getId(),
                 order.getOrderDate(),
-                order.getStatus(),
+                order.getStatus().name(),
                 order.getTotalAmount(),
                 itemsDTO
         );
