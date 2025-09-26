@@ -47,6 +47,12 @@ public class ProductService {
     }
 
     @Transactional
+    public Page<ProductResponseDTO> searchProducts(String name, Pageable pageable) {
+        Page<Product> productPage = productRepository.findByNameContainingIgnoreCase(name, pageable);
+        return productPage.map(this::toResponseDTO);
+    }
+
+    @Transactional
     public ProductResponseDTO updateProduct(Long id, ProductRequestDTO requestDTO) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado com o id: " + id));

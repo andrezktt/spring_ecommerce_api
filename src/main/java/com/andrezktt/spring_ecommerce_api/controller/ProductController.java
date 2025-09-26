@@ -44,6 +44,14 @@ public class ProductController {
         return ResponseEntity.ok(product);
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<Page<ProductResponseDTO>> searchProducts(
+            @RequestParam("name") String name,
+            @ParameterObject Pageable pageable) {
+        Page<ProductResponseDTO> products = productService.searchProducts(name, pageable);
+        return ResponseEntity.ok(products);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponseDTO> updateProduct(
             @PathVariable Long id,
