@@ -7,8 +7,10 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
 
 @SpringBootApplication
+@EnableCaching
 @OpenAPIDefinition(
 		info = @Info(title = "E-commerce API", version = "1.0", description = "Documentação da API do E-commerce"),
 		security = @SecurityRequirement(name = "bearerAuth")
