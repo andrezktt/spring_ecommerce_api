@@ -22,15 +22,18 @@ public class OrderService {
     private final CustomerRepository customerRepository;
     private final ProductRepository productRepository;
     private final OrderMapper orderMapper;
+    private final NotificationService notificationService;
 
     public OrderService(PurchaseOrderRepository purchaseOrderRepository,
                         CustomerRepository customerRepository,
                         ProductRepository productRepository,
-                        OrderMapper orderMapper) {
+                        OrderMapper orderMapper,
+                        NotificationService notificationService) {
         this.purchaseOrderRepository = purchaseOrderRepository;
         this.customerRepository = customerRepository;
         this.productRepository = productRepository;
         this.orderMapper = orderMapper;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -68,9 +71,14 @@ public class OrderService {
 
         purchaseOrder.setOrderItems(orderItems);
         purchaseOrder.setTotalAmount(totalAmount);
-        PurchaseOrder savedOrder = purchaseOrderRepository.save(purchaseOrder);
 
-        return orderMapper.toResponseDTO(savedOrder);
+        PurchaseOrder savedOrder = purchaseOrderRepository.save(purchaseOrder);
+        OrderResponseDTO responseDTO = orderMapper.toResponseDTO(savedOrder);
+
+        notificationService.sendOrderConfirmation(responseDTO);
+        System.out.println("Retornando resposta ao cliente... O e-mail será enviado em segundo plano.");
+
+        return responseDTO;
     }
 
     @Transactional(readOnly = true)
