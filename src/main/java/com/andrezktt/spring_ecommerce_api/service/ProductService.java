@@ -7,6 +7,9 @@ import com.andrezktt.spring_ecommerce_api.mapper.ProductMapper;
 import com.andrezktt.spring_ecommerce_api.repository.OrderItemRepository;
 import com.andrezktt.spring_ecommerce_api.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -38,6 +41,7 @@ public class ProductService {
         return productPage.map(productMapper::toResponseDTO);
     }
 
+    @Cacheable(value = "products", key = "#id")
     @Transactional(readOnly = true)
     public ProductResponseDTO getProductById(Long id) {
         Product product = productRepository.findById(id)
@@ -51,6 +55,7 @@ public class ProductService {
         return productPage.map(productMapper::toResponseDTO);
     }
 
+    @CachePut(value = "products", key = "#id")
     @Transactional
     public ProductResponseDTO updateProduct(Long id, ProductRequestDTO requestDTO) {
         Product product = productRepository.findById(id)
@@ -62,6 +67,7 @@ public class ProductService {
         return productMapper.toResponseDTO(updatedProduct);
     }
 
+    @CacheEvict(value = "products", key = "#id")
     @Transactional
     public void deleteProduct(Long id) {
         if (!productRepository.existsById(id)) {
